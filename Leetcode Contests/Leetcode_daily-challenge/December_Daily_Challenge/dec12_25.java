@@ -1,7 +1,7 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.*;
 
 public class dec12_25 {
     public static int[] countMentions(int numberOfUsers, List<List<String>> events) {
@@ -30,8 +30,8 @@ public class dec12_25 {
             if(list.get(0).equals("MESSAGE")){
                 String s = list.get(2);
                 //id1, id2 , etc - for specific users
-                if(s.indexOf("id") != -1){
-                    String parts[] = s.split(" ");
+                if(s.contains("id")){
+                    String[] parts = s.split(" ");
                     for(String part : parts){
                         int x = Integer.parseInt(part.substring(2));
                         ans[x]++;
@@ -69,14 +69,13 @@ public class dec12_25 {
     }
     public static void main(String[] args) {
         int numberOfUsers = 2;
-        List<List<String>> events = List.of(
-            List.of("MESSAGE", "10", "id1 id0"),
-            List.of("OFFLINE", "11", "0"),
-            List.of("MESSAGE", "71", "HERE")
-        );
+        List<List<String>> events = new ArrayList<>();
+        events.add(new ArrayList<>(List.of("MESSAGE", "10", "id1 id0")));
+        events.add(new ArrayList<>(List.of("OFFLINE", "11", "0")));
+        events.add(new ArrayList<>(List.of("MESSAGE", "71", "HERE")));
         int[] mentions = countMentions(numberOfUsers,events);
         for(int x : mentions){
-            System.out.println(x);
+            System.out.print(x + " ");
         }
     }
 }
