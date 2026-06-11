@@ -1,0 +1,42 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class june11_26 {
+    static final long MOD = 1_000_000_007L;
+    private static long power(long base, long exponent) {
+        if (exponent == 0)
+            return 1;
+        long half = power(base, exponent / 2);
+        long result = (half * half) % MOD;
+        if (exponent % 2 == 1) {
+            result = (result * base) % MOD;
+        }
+        return result;
+    }
+    private static int getMaxDepth(Map<Integer, List<Integer>> adj, int node, int parent) {
+        int depth = 0;
+        for (int neighbor : adj.getOrDefault(node, new ArrayList<>())) {
+            if (neighbor == parent)
+                continue;
+            depth = Math.max(depth, getMaxDepth(adj, neighbor, node) + 1);
+        }
+        return depth;
+    }
+    public static int assignEdgeWeights(int[][] edges) {
+        Map<Integer, List<Integer>> adj = new HashMap<>();
+        for (int[] edge : edges) {
+            int u = edge[0];
+            int v = edge[1];
+            adj.computeIfAbsent(u, k -> new ArrayList<>()).add(v);
+            adj.computeIfAbsent(v, k -> new ArrayList<>()).add(u);
+        }
+        int maxDepth = getMaxDepth(adj, 1, 0);
+        return (int) power(2, maxDepth - 1);
+    }
+    public static void main(String[] args) {
+            int[][] edges = {{1, 2}, {1, 3}, {3, 4}, {3, 5}};
+            System.out.println(assignEdgeWeights(edges));
+    }
+}
