@@ -1,0 +1,138 @@
+import java.util.ArrayList;
+import java.util.List;
+
+public class july22_26 {
+    public static List<Integer> maxActiveSectionsAfterTrade(String s, int[][] queries) {
+        int n = s.length();
+        int activeCount = 0;
+        for(int idx = 0 ; idx < n ; idx++){
+            if(s.charAt(idx) == '1'){
+                activeCount++;
+            }
+        }
+        int[] blockStart = new int[n];
+        int[] blockEnd = new int[n];
+        int i = 0;
+        int m = 0;
+        while(i < n){
+            if(s.charAt(i) == '0'){
+                int start = i;
+                while(i < n && s.charAt(i) == '0'){
+                    i++;
+                }
+                blockStart[m] = start;
+                blockEnd[m] = i - 1;
+                m++;
+            }
+            else{
+                i++;
+            }
+        }
+        // if there is only one block of zeros
+        if(m < 2){
+            List<Integer> res = new ArrayList<>();
+            for(int k = 0 ; k < queries.length ; k++){
+                res.add(activeCount);
+            }
+            return res;
+        }
+        int[] blockSize = new int[m];
+        for(int k = 0 ; k < m ; k++){
+            blockSize[k] = blockEnd[k] - blockStart[k] + 1;
+        }
+        int N = m - 1;
+        int[] pairSum = new int[N];
+        for(int k = 0 ; k < N ; k++){
+            pairSum[k] = blockSize[k] + blockSize[k + 1];
+        }
+        int[] st = constructST(pairSum, N);
+        List<Integer> result = new ArrayList<>();
+        for(int[] q : queries){
+            int l = q[0];
+            int r = q[1];
+            int low  = lowerBound(blockEnd, m, l);
+            int high = upperBound(blockStart, m, r) - 1;
+            int maxPairSum = 0;
+            if(low < high){
+                int firstLen = blockEnd[low] - Math.max(blockStart[low], l) + 1;
+                int lastLen  = Math.min(blockEnd[high], r) - blockStart[high] + 1;
+                if(high - low == 1){
+                    maxPairSum = firstLen + lastLen;
+                }
+                else{
+                    int pair1 = firstLen + blockSize[low + 1];
+                    int pair2 = blockSize[high - 1] + lastLen;
+                    int RMQMaxPairSum = (low + 1 <= high - 2) ? RMQ(st, N, low + 1, high - 2) : 0; 
+                    maxPairSum = Math.max(pair1, Math.max(pair2, RMQMaxPairSum));
+                }
+            }
+            result.add(maxPairSum + activeCount);
+        }
+        return result;
+    }
+    public static int lowerBound(int[] arr, int len, int key){
+        int low = 0;
+        int high = len;
+        while(low < high){
+            int mid = low + (high - low) / 2;
+            if(arr[mid] < key){
+                low = mid + 1;
+            }
+            else{
+                high = mid;
+            }
+        }
+        return low;
+    }
+    public static int upperBound(int[] arr, int len, int key){
+        int low = 0;
+        int high = len;
+        while(low < high){
+            int mid = low + (high - low) / 2;
+            if(arr[mid] <= key){
+                low = mid + 1;
+            }
+            else{
+                high = mid;
+            }
+        }
+        return low;
+    }
+    public static void buildSegmentTree(int i, int l, int r, int[] segmentTree, int[] arr){
+        if(l == r){
+            segmentTree[i] = arr[l];
+            return;
+        }
+        int mid = l + (r - l) / 2;
+        buildSegmentTree(2 * i + 1, l, mid, segmentTree, arr);
+        buildSegmentTree(2 * i + 2, mid + 1, r, segmentTree, arr);
+        segmentTree[i] = Math.max(segmentTree[2 * i + 1], segmentTree[2 * i + 2]);
+    }
+    public static int[] constructST(int[] arr, int n){
+        int[] segmentTree = new int[4 * n];
+        buildSegmentTree(0, 0, n - 1, segmentTree, arr);
+        return segmentTree;
+    }
+    public static int querySegmentTree(int start, int end, int i, int l, int r, int[] segmentTree){
+        if(l > end || r < start){
+            return Integer.MIN_VALUE;
+        }
+        if(l >= start && r <= end){
+            return segmentTree[i];
+        }
+        int mid = l + (r - l) / 2;
+        return Math.max(querySegmentTree(start, end, 2 * i + 1, l, mid, segmentTree), querySegmentTree(start, end, 2 * i + 2, mid + 1, r, segmentTree));
+    }
+    public static int RMQ(int[] st, int n, int a, int b) {
+        return querySegmentTree(a, b, 0, 0, n - 1, st);
+    }
+    public static void main(String[] args) {
+        String s = "0100";
+        int[][] queries = {{0,3}, {0,2}, {1,3}, {2,3}};
+        List<Integer> ans = maxActiveSectionsAfterTrade(s, queries);
+        for(int i = 0 ; i < ans.size() ; i++){
+            System.out.print(ans.get(i) + " ");
+        }
+        System.out.println();
+    }
+}
