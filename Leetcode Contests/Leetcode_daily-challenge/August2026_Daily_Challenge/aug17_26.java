@@ -1,41 +1,44 @@
+import java.util.Arrays;
+
 public class aug17_26 {
-    public static int largestInteger(int[] nums, int k) {
-        int n = nums.length;
-        // case 1 - k == n
-        if(k == n){
-            int ans = 0;
-            for(int i = 0 ; i < n ; i++){
-                ans = Math.max(ans, nums[i]);
+    static int[][] t = new int[501][501];
+    public static int solve(int l, int r, int[] cumSum) {
+        if(l >= r){
+            return 0;
+        }
+        if(t[l][r] != -1){
+            return t[l][r];
+        }
+        int score = 0;
+        for(int mid = l ; mid <= r-1 ; mid++){
+            int leftSum  = cumSum[mid] - (l-1 >= 0 ? cumSum[l-1] : 0);
+            int rightSum = cumSum[r] - cumSum[mid];
+            if(leftSum < rightSum){
+                score = Math.max(score, leftSum + solve(l, mid, cumSum));
             }
-            return ans;
-        }
-        // case 2 - k == 1
-        int[] freq = new int[51];
-        for(int num : nums){
-            freq[num]++;
-        }
-        if(k == 1){
-            for(int num = 50 ; num >= 0 ; num--){
-                if(freq[num] == 1){
-                    return num;
-                }
+            else if(leftSum > rightSum){
+                score = Math.max(score, rightSum + solve(mid+1, r, cumSum));
+            }
+            else{
+                score = Math.max(score, Math.max(leftSum + solve(l, mid, cumSum), rightSum + solve(mid+1, r, cumSum)));
             }
         }
-        // case 3 - 1 < k < n
-        int res = -1;
-        if(freq[nums[0]] == 1){
-            res = Math.max(res, nums[0]);
+        return t[l][r] = score;
+    }
+    public static int stoneGameV(int[] stoneValue) {
+        int n = stoneValue.length;
+        int[] cumSum = new int[n];
+        cumSum[0] = stoneValue[0];
+        for(int i = 1 ; i < n ; i++){
+            cumSum[i] = cumSum[i-1] + stoneValue[i];
         }
-        if(freq[nums[n - 1]] == 1){
-            res = Math.max(res, nums[n - 1]);
+        for(int[] row : t){
+            Arrays.fill(row, -1);
         }
-        return res;
+        return solve(0, n-1, cumSum);
     }
     public static void main(String[] args) {
-        int[] nums = {3,9,2,1,7};
-        int k = 3;
-        int[] nums1 = {3,9,7,2,1,7};
-        int k1 = 4;
-        System.out.println(largestInteger(nums, k) + " " + largestInteger(nums1, k1));
+        int[] stoneValue = {6,2,3,4,5,5};
+        System.out.println(stoneGameV(stoneValue));
     }
 }
