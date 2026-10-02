@@ -1,5 +1,5 @@
 import java.util.*;
-public class oct26 {
+public class oct01_26 {
     public static boolean isValid(String s) {
         Stack<Character> stack = new Stack<>();
         for(char ch : s.toCharArray()){
